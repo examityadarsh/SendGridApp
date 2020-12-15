@@ -20,6 +20,8 @@ namespace SendGridApp
         DataTable dtable = new DataTable();
         StringBuilder sptext = new System.Text.StringBuilder();
         StringBuilder completestatement = new System.Text.StringBuilder();
+        string[] selectedsp = new string[] { };
+        List<string> list = new List<string>();
         #endregion
 
         public MainPage()
@@ -81,6 +83,7 @@ namespace SendGridApp
             textBox3.Text = string.Empty;
             foreach (var item in chkSPlist.CheckedItems)
             {
+
                 using (SqlConnection sqlConnection = new SqlConnection())
                 {
                     sqlConnection.ConnectionString = connString;
@@ -101,17 +104,33 @@ namespace SendGridApp
                     {
                         sptext.Append(dr[0].ToString());
                     }
+                    sptext.AppendLine(Environment.NewLine);
+                    sptext.AppendLine("go");
+                    sptext.AppendLine(Environment.NewLine);
+
+                    list.Add(sptext.ToString());
+
+                    sptext.Clear();
+
+
                 }
-                sptext.AppendLine(Environment.NewLine);
-                sptext.AppendLine("go");
-                sptext.AppendLine(Environment.NewLine);
-                if (sptext.ToString().Length > 0)
+
+                foreach (string itemlist in list)
                 {
-                    lblMessage.Visible = true;
-                    textBox3.Text = sptext.ToString();
+                    if (textBox3.Text.Length == 0)
+                        textBox3.Text = itemlist.ToString();
+                    else
+                        textBox3.Text += Environment.NewLine + itemlist.ToString();
+
                 }
-                else
-                { textBox3.Text = string.Empty; lblMessage.Visible = false; }
+                //    if (sptext.ToString().Length > 0)
+                //{
+                //   // selectedsp= list.ToArray();
+                //    lblMessage.Visible = true;
+                //    textBox3.Text = sptext.ToString();
+                //}
+                //else
+                //{ textBox3.Text = string.Empty; lblMessage.Visible = false; }
             }
         }
 
@@ -125,85 +144,128 @@ namespace SendGridApp
         {
             try
             {
-                string alltext = textBox3.Text;
+                textBox3.Text = string.Empty;
                 string newstr = string.Empty;
                 string ip = ConfigurationSettings.AppSettings.Get("SERVER").ToString(); //"[172.25.16.39]";// ConfigurationSettings.AppSettings.Get("SERVER").ToString();
                 string dbname = ConfigurationSettings.AppSettings.Get("DBName").ToString(); //"Examity_Prod_AAPC";// ConfigurationSettings.AppSettings.Get("DBName").ToString();
                 string usestatement = "use " + dbname + Environment.NewLine + "go" + Environment.NewLine;
-
-                string[] str = new string[] { "@recipients", "@cc","@blind_copy_recipients", "@subject", "@body" };
-                //string[] str = new string[] { textBox1.Text };
-                //alltext = alltext.ToString().Replace("create", "alter");
-
-                string result = Regex.Replace(alltext.ToString(), "create proc", "CREATE OR ALTER PROCEDURE", RegexOptions.IgnoreCase);
-                result = Regex.Replace(result.ToString(), "create procedure", "CREATE OR ALTER PROCEDURE", RegexOptions.IgnoreCase);
-                result = Regex.Replace(result.ToString(), "create  proc", "CREATE OR ALTER PROCEDURE", RegexOptions.IgnoreCase);
-                result = Regex.Replace(result, "Procedureedure", "Procedure", RegexOptions.IgnoreCase);
-                result = result.Trim();
-                //string.Replace.
-                string receipients = "''";
-                string cc = "''";
-                string bcc = "''";
-                string subject = "''";
-                string body = "''";
-                string result1 = "''";// alltext.ToString().Replace("create", "alter"); 
-                //10.223.81.0
-                foreach (string s in str)
+                string[] str = new string[] { "@recipients", "@copy_recipients", "@blind_copy_recipients", "@subject", "@body" };
+                string alltext = string.Empty;// textBox3.Text;
+                foreach (string item in list)
                 {
-                    alltext = alltext.Trim();
-                    bool regexbool = Regex.IsMatch(alltext, string.Format(@"(^|\s){0}", Regex.Escape(s)), RegexOptions.IgnoreCase);
-                    if (regexbool)
+                    alltext = item;
+                    string result =Regex.Replace(alltext.ToString(), "create proc", "CREATE OR ALTER PROCEDURE", RegexOptions.IgnoreCase);
+                    result = Regex.Replace(result.ToString(), "create procedure", "CREATE OR ALTER PROCEDURE", RegexOptions.IgnoreCase);
+                    result = Regex.Replace(result.ToString(), "create  proc", "CREATE OR ALTER PROCEDURE", RegexOptions.IgnoreCase);
+                    result = Regex.Replace(result, "Procedureedure", "Procedure", RegexOptions.IgnoreCase);
+                    result = result.Trim();
+                    string receipients = "''";
+                    string cc = "''";
+                    string bcc = "''";
+                    string subject = "''";
+                    string body = "''";
+                    string result1 = "''";
+                    //10.223.81.0
+                    bool regexbool = false;
+                    var commentvalue = string.Empty;
+                    result = Regex.Replace(result, @"^\s+$[\r\n]*", string.Empty, RegexOptions.Multiline);
+
+                    //result = Regex.Replace(result.Trim(), @"= ", "=", RegexOptions.Multiline);
+                    //result = Regex.Replace(result.Trim(), @" = ", "=", RegexOptions.Multiline);
+
+                    alltext = result.Trim();
+                    foreach (string s in str)
                     {
-                        var regex = new Regex(".*" + s + "(.*),.* ");
-                        result1 = regex.Match(alltext).Groups[1].Value;
-                        result1 = result1.Replace("=", String.Empty).Replace(",", string.Empty);
-                        switch (s)
+                        alltext = alltext.Trim();
+                        commentvalue = string.Empty;
+
+                        regexbool = Regex.IsMatch(alltext.Trim(), string.Format(@"(^|\s){0}", "--" + s), RegexOptions.IgnoreCase);
+                        if (regexbool)
                         {
-                            case "@recipients":
-                                receipients = result1;
-                                break;
-                            case "@blind_copy_recipients":
-                                bcc = result1;
-                                break;
-                            case "@subject":
-                                subject = result1;
-                                break;
-                            case "@body":
-                                body = result1;
-                                break;
-                            case "@cc":
-                                cc = result1;
-                                break;
+                            var regex = new Regex(".*" + "--" + s + "(.*),.* ");
+                            commentvalue = regex.Match(alltext.Trim()).Groups[1].Value.Trim() + ',';
+                            alltext = alltext.Replace("--" + s, "");
+                            if (commentvalue.Trim().Length > 0)
+                                alltext = alltext.Replace(commentvalue, "");
                         }
                     }
+
+                    alltext = Regex.Replace(alltext.Trim(), @"^\s+$[\r\n]*", string.Empty, RegexOptions.Multiline);
+                    alltext = Regex.Replace(alltext.Trim(), @"= ", "=", RegexOptions.Multiline);
+                    alltext = Regex.Replace(alltext.Trim(), @" = ", "=", RegexOptions.Multiline);
+                    //alltext = Regex.Replace(alltext.Trim(), @",^\s+$[\r\n]=", string.Empty, RegexOptions.Multiline);
+                    ///alltext = Regex.Replace(alltext.Trim(), @"^\s+$[\r\n]= '", string.Empty, RegexOptions.Multiline);
+
+                    foreach (string s in str)
+                    {
+                        result1 = string.Empty;
+                        regexbool = Regex.IsMatch(alltext.Trim(), string.Format(@"(^|\s){0}", s), RegexOptions.IgnoreCase);
+                        if (regexbool)
+                        {
+                            var regex = new Regex(".*" + s + "(.*),.* ", RegexOptions.Singleline);
+                            string myresult = regex.Match(alltext.Trim()).Groups[1].Value.Trim();
+                            if (myresult.IndexOf(',') > 0)
+                                result1 = myresult.Substring(1, myresult.IndexOf(',') - 1);
+                            else
+                                result1 = myresult.Substring(1, myresult.Length - 1);
+                            switch (s)
+                            {
+                                case "@recipients":
+                                    receipients = result1;
+                                    break;
+                                case "@blind_copy_recipients":
+                                    bcc = result1;
+                                    break;
+                                case "@subject":
+                                    subject = result1;
+                                    break;
+                                case "@body":
+                                    body = result1;
+                                    break;
+                                case "@copy_recipients":
+                                    cc = result1;
+                                    break;
+                            }
+                        }
+
+                    }
+
+                    result = Regex.Replace(result, "exec msdb.dbo.", @"/* Exec msdb.dbo.", RegexOptions.IgnoreCase);
+                    completestatement.Clear();
+                    completestatement.AppendLine(string.Empty);
+                    completestatement.Append("EXEC USP_AddToEmailQueue ");
+                    completestatement.Append(receipients);
+                    completestatement.Append(",");
+
+                    completestatement.Append(cc);
+                    completestatement.Append(",");
+
+                    completestatement.Append(bcc);
+                    completestatement.Append(",");
+
+                    completestatement.Append(subject);
+                    completestatement.Append(",");
+
+
+                    completestatement.Append(body);
+                    completestatement.Append(",");
+                    completestatement.Append(21);
+                    completestatement.Append(",");
+                    completestatement.Append("''");
+
+                    receipients = "''";
+                    cc = "''";
+                    bcc = "''";
+                    subject = "''";
+                    body = "''";
+                    textBox3.Text += Regex.Replace(result.Trim(), "@body_format = 'HTML'", "@body_format = 'HTML'*/" + completestatement.ToString(), RegexOptions.IgnoreCase).Trim();
+                    //textBox3.Text += Regex.Replace(textBox3.Text, "go", string.Empty, RegexOptions.IgnoreCase).Trim();
+                    textBox3.Text += Environment.NewLine + "---------------------------------------------------------" + Environment.NewLine; ;
+                    result = String.Empty;
+                    completestatement.Clear();
                 }
-              
-                result = Regex.Replace(result, "exec msdb.dbo.", @"/* Exec", RegexOptions.IgnoreCase);
-                completestatement.AppendLine(string.Empty);
-                completestatement.Append("EXEC USP_AddToEmailQueue ");
-                completestatement.Append(receipients);
-                completestatement.Append(",");
-
-                completestatement.Append(cc);
-                completestatement.Append(",");
-
-                completestatement.Append(bcc);
-                completestatement.Append(",");
-
-                completestatement.Append(subject);
-                completestatement.Append(",");
 
 
-                completestatement.Append(body);
-                completestatement.Append(",");
-                completestatement.Append(21);
-                completestatement.Append(",");
-                completestatement.Append("'");
-
-            
-                textBox3.Text = Regex.Replace(result, "html", "HTML'*/" + completestatement.ToString(), RegexOptions.IgnoreCase).Trim();
-
-                completestatement.Clear();
             }
             catch (Exception ex)
             {
@@ -220,18 +282,31 @@ namespace SendGridApp
             lblMessage.Text = string.Empty; textBox3.Text = string.Empty;
             sptext.Length = 0;
             chkSPlist.ClearSelected();
+            completestatement.Clear();
+            textBox3.Text = string.Empty;
         }
 
         private void button3_Click(object sender, EventArgs e)
         {
-            //using (SqlConnection sqlConnection = new SqlConnection())
-            //{
-            //    sqlConnection.ConnectionString = connString;
-            //    sqlConnection.Open();
-            //    SqlCommand sqlCommand = new SqlCommand(textBox3.Text.ToString(), sqlConnection);
-            //    sqlCommand.CommandType = CommandType.Text;
-            //    sqlCommand.ExecuteNonQuery();
-            //}
+            try
+            {
+                //using (SqlConnection sqlConnection = new SqlConnection())
+                //{
+                //    sqlConnection.ConnectionString = connString;
+                //    sqlConnection.Open();
+                //    SqlCommand sqlCommand = new SqlCommand(textBox3.Text.ToString(), sqlConnection);
+                //    sqlCommand.CommandType = CommandType.Text;
+                //    sqlCommand.ExecuteNonQuery();
+                //    sqlCommand.Dispose();
+                //    sqlConnection.Close();
+                //}
+                //MessageBox.Show(chkSPlist.SelectedItem + " MODIFIED SUCCESSFULLY");
+                //textBox3.Text = String.Empty;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
         }
 
         private void button4_Click(object sender, EventArgs e)

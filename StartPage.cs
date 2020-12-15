@@ -16,7 +16,7 @@ namespace SendGridApp
     public partial class StartPage : Form
     {
         String connString = null;
-
+        SqlConnection sqlConnection;
         [Obsolete]
         public StartPage()
         {
@@ -113,6 +113,7 @@ namespace SendGridApp
         [Obsolete]
         private void BtnCreateConnection_Click(object sender, EventArgs e)
         {
+            connString = "Data Source=" + TxtServer.Text + "; User ID=" + TxtUsername.Text + ";Password=" + TxtPassword.Text + ";";
             ConfigurationSettings.AppSettings.Set("Connstring", string.Empty);
             connString = connString + " Initial Catalog= " + CMBMyDB.SelectedItem.ToString();
             ConfigurationSettings.AppSettings.Set("Connstring", connString);
@@ -139,16 +140,16 @@ namespace SendGridApp
             AddEmailQueue.AppendLine("End");
            
 
-            using (SqlConnection sqlConnection = new SqlConnection())
-            {
-                sqlConnection.ConnectionString = connString;
-                sqlConnection.Open();
-                SqlCommand sqlCommand = new SqlCommand(AddEmailQueue.ToString(), sqlConnection);
-                sqlCommand.CommandType = CommandType.Text;
-                sqlCommand.ExecuteNonQuery();
-                sqlCommand.Dispose();
-                sqlConnection.Close();
-            }
+            //using (SqlConnection sqlConnection = new SqlConnection())
+            //{
+            //    sqlConnection.ConnectionString = connString;
+            //    sqlConnection.Open();
+            //    SqlCommand sqlCommand = new SqlCommand(AddEmailQueue.ToString(), sqlConnection);
+            //    sqlCommand.CommandType = CommandType.Text;
+            //    sqlCommand.ExecuteNonQuery();
+            //    sqlCommand.Dispose();
+            //    sqlConnection.Close();
+            //}
 
             MainPage M = new MainPage();
             M.Show();
@@ -157,9 +158,11 @@ namespace SendGridApp
         [Obsolete]
         private void CMBMyDB_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (sqlConnection != null) { sqlConnection.Close(); }
             ConfigurationSettings.AppSettings.Set("DBName", string.Empty);
             ConfigurationSettings.AppSettings.Set("Connstring", string.Empty);
             ConfigurationSettings.AppSettings.Set("DBName", CMBMyDB.SelectedItem.ToString());
+           
         }
     }
 }
