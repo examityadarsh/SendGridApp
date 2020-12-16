@@ -29,6 +29,8 @@
         private void InitializeComponent()
         {
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.TxtNewDB = new System.Windows.Forms.TextBox();
+            this.lblcreatedb = new System.Windows.Forms.Label();
             this.BtnConnect = new System.Windows.Forms.Button();
             this.CMBMyDB = new System.Windows.Forms.ComboBox();
             this.CMBDBType = new System.Windows.Forms.ComboBox();
@@ -42,8 +44,6 @@
             this.label2 = new System.Windows.Forms.Label();
             this.BtnCreateConnection = new System.Windows.Forms.Button();
             this.BtnCloseWindow = new System.Windows.Forms.Button();
-            this.lblcreatedb = new System.Windows.Forms.Label();
-            this.TxtNewDB = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -70,6 +70,25 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Create DB Connection";
             // 
+            // TxtNewDB
+            // 
+            this.TxtNewDB.Location = new System.Drawing.Point(110, 172);
+            this.TxtNewDB.MaxLength = 10;
+            this.TxtNewDB.Name = "TxtNewDB";
+            this.TxtNewDB.Size = new System.Drawing.Size(121, 20);
+            this.TxtNewDB.TabIndex = 12;
+            this.TxtNewDB.Visible = false;
+            // 
+            // lblcreatedb
+            // 
+            this.lblcreatedb.AutoSize = true;
+            this.lblcreatedb.Location = new System.Drawing.Point(11, 175);
+            this.lblcreatedb.Name = "lblcreatedb";
+            this.lblcreatedb.Size = new System.Drawing.Size(56, 13);
+            this.lblcreatedb.TabIndex = 11;
+            this.lblcreatedb.Text = "Create DB";
+            this.lblcreatedb.Visible = false;
+            // 
             // BtnConnect
             // 
             this.BtnConnect.Location = new System.Drawing.Point(232, 116);
@@ -82,12 +101,14 @@
             // 
             // CMBMyDB
             // 
+            this.CMBMyDB.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.CMBMyDB.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.CMBMyDB.FormattingEnabled = true;
             this.CMBMyDB.Location = new System.Drawing.Point(109, 140);
             this.CMBMyDB.Name = "CMBMyDB";
             this.CMBMyDB.Size = new System.Drawing.Size(221, 21);
             this.CMBMyDB.TabIndex = 9;
-            this.CMBMyDB.SelectedIndexChanged += new System.EventHandler(this.CMBMyDB_SelectedIndexChanged);
+            this.CMBMyDB.TabIndexChanged += new System.EventHandler(this.CMBMyDB_TabIndexChanged);
             // 
             // CMBDBType
             // 
@@ -192,25 +213,6 @@
             this.BtnCloseWindow.Text = "Close";
             this.BtnCloseWindow.UseVisualStyleBackColor = false;
             this.BtnCloseWindow.Click += new System.EventHandler(this.BtnCloseWindow_Click);
-            // 
-            // lblcreatedb
-            // 
-            this.lblcreatedb.AutoSize = true;
-            this.lblcreatedb.Location = new System.Drawing.Point(11, 175);
-            this.lblcreatedb.Name = "lblcreatedb";
-            this.lblcreatedb.Size = new System.Drawing.Size(56, 13);
-            this.lblcreatedb.TabIndex = 11;
-            this.lblcreatedb.Text = "Create DB";
-            this.lblcreatedb.Visible = false;
-            // 
-            // TxtNewDB
-            // 
-            this.TxtNewDB.Location = new System.Drawing.Point(110, 172);
-            this.TxtNewDB.MaxLength = 10;
-            this.TxtNewDB.Name = "TxtNewDB";
-            this.TxtNewDB.Size = new System.Drawing.Size(121, 20);
-            this.TxtNewDB.TabIndex = 12;
-            this.TxtNewDB.Visible = false;
             // 
             // StartPage
             // 

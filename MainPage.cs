@@ -154,7 +154,7 @@ namespace SendGridApp
                 foreach (string item in list)
                 {
                     alltext = item;
-                    string result =Regex.Replace(alltext.ToString(), "create proc", "CREATE OR ALTER PROCEDURE", RegexOptions.IgnoreCase);
+                    string result = Regex.Replace(alltext.ToString(), "create proc", "CREATE OR ALTER PROCEDURE", RegexOptions.IgnoreCase);
                     result = Regex.Replace(result.ToString(), "create procedure", "CREATE OR ALTER PROCEDURE", RegexOptions.IgnoreCase);
                     result = Regex.Replace(result.ToString(), "create  proc", "CREATE OR ALTER PROCEDURE", RegexOptions.IgnoreCase);
                     result = Regex.Replace(result, "Procedureedure", "Procedure", RegexOptions.IgnoreCase);
@@ -170,66 +170,51 @@ namespace SendGridApp
                     var commentvalue = string.Empty;
                     result = Regex.Replace(result, @"^\s+$[\r\n]*", string.Empty, RegexOptions.Multiline);
 
-                    //result = Regex.Replace(result.Trim(), @"= ", "=", RegexOptions.Multiline);
-                    //result = Regex.Replace(result.Trim(), @" = ", "=", RegexOptions.Multiline);
-
                     alltext = result.Trim();
+                 
+                    var execstr = "sp_send_dbmail";
+                    var regextest = new Regex(".*" + execstr + "(.*),.* ", RegexOptions.Singleline);
+                    string myresulttest = regextest.Match(alltext.Trim()).Groups[1].Value.Trim();
+
+                    //myresulttest = Regex.Replace(myresulttest.Trim(), @"^\s+$[\r\n]*", string.Empty, RegexOptions.Multiline);
+
+                    string[] myarray = new string[] { };
+                    myarray = myresulttest.Trim().Split(',');
+                    string mysplstr = string.Empty;
                     foreach (string s in str)
                     {
-                        alltext = alltext.Trim();
-                        commentvalue = string.Empty;
-
-                        regexbool = Regex.IsMatch(alltext.Trim(), string.Format(@"(^|\s){0}", "--" + s), RegexOptions.IgnoreCase);
-                        if (regexbool)
+                        foreach (string stritem in myarray)
                         {
-                            var regex = new Regex(".*" + "--" + s + "(.*),.* ");
-                            commentvalue = regex.Match(alltext.Trim()).Groups[1].Value.Trim() + ',';
-                            alltext = alltext.Replace("--" + s, "");
-                            if (commentvalue.Trim().Length > 0)
-                                alltext = alltext.Replace(commentvalue, "");
-                        }
-                    }
-
-                    alltext = Regex.Replace(alltext.Trim(), @"^\s+$[\r\n]*", string.Empty, RegexOptions.Multiline);
-                    alltext = Regex.Replace(alltext.Trim(), @"= ", "=", RegexOptions.Multiline);
-                    alltext = Regex.Replace(alltext.Trim(), @" = ", "=", RegexOptions.Multiline);
-                    //alltext = Regex.Replace(alltext.Trim(), @",^\s+$[\r\n]=", string.Empty, RegexOptions.Multiline);
-                    ///alltext = Regex.Replace(alltext.Trim(), @"^\s+$[\r\n]= '", string.Empty, RegexOptions.Multiline);
-
-                    foreach (string s in str)
-                    {
-                        result1 = string.Empty;
-                        regexbool = Regex.IsMatch(alltext.Trim(), string.Format(@"(^|\s){0}", s), RegexOptions.IgnoreCase);
-                        if (regexbool)
-                        {
-                            var regex = new Regex(".*" + s + "(.*),.* ", RegexOptions.Singleline);
-                            string myresult = regex.Match(alltext.Trim()).Groups[1].Value.Trim();
-                            if (myresult.IndexOf(',') > 0)
-                                result1 = myresult.Substring(1, myresult.IndexOf(',') - 1);
-                            else
-                                result1 = myresult.Substring(1, myresult.Length - 1);
-                            switch (s)
+                            mysplstr=Regex.Replace(stritem.Trim(), @"^\s+$[\r\n]*", string.Empty, RegexOptions.Singleline);
+                            string[] myeqlstr = new string[] { };
+                            myeqlstr = mysplstr.Split('=');
+                            if (s == myeqlstr[0].Trim())
                             {
-                                case "@recipients":
-                                    receipients = result1;
-                                    break;
-                                case "@blind_copy_recipients":
-                                    bcc = result1;
-                                    break;
-                                case "@subject":
-                                    subject = result1;
-                                    break;
-                                case "@body":
-                                    body = result1;
-                                    break;
-                                case "@copy_recipients":
-                                    cc = result1;
-                                    break;
+                                result1 = myeqlstr[1].Trim();
+                                switch (s)
+                                {
+                                    case "@recipients":
+                                        receipients = result1;
+                                        break;
+                                    case "@blind_copy_recipients":
+                                        bcc = result1;
+                                        break;
+                                    case "@subject":
+                                        subject = result1;
+                                        break;
+                                    case "@body":
+                                        body = result1;
+                                        break;
+                                    case "@copy_recipients":
+                                        cc = result1;
+                                        break;
+                                    default:
+                                        break;
+                                }
                             }
+
                         }
-
                     }
-
                     result = Regex.Replace(result, "exec msdb.dbo.", @"/* Exec msdb.dbo.", RegexOptions.IgnoreCase);
                     completestatement.Clear();
                     completestatement.AppendLine(string.Empty);
@@ -263,6 +248,7 @@ namespace SendGridApp
                     textBox3.Text += Environment.NewLine + "---------------------------------------------------------" + Environment.NewLine; ;
                     result = String.Empty;
                     completestatement.Clear();
+
                 }
 
 
@@ -279,11 +265,18 @@ namespace SendGridApp
 
         private void button2_Click(object sender, EventArgs e)
         {
+            ClearControls();
+        }
+
+        private void ClearControls()
+        {
             lblMessage.Text = string.Empty; textBox3.Text = string.Empty;
             sptext.Length = 0;
             chkSPlist.ClearSelected();
             completestatement.Clear();
             textBox3.Text = string.Empty;
+            list.Clear();
+            selectedsp = null;
         }
 
         private void button3_Click(object sender, EventArgs e)
@@ -300,8 +293,8 @@ namespace SendGridApp
                 //    sqlCommand.Dispose();
                 //    sqlConnection.Close();
                 //}
-                //MessageBox.Show(chkSPlist.SelectedItem + " MODIFIED SUCCESSFULLY");
-                //textBox3.Text = String.Empty;
+                //MessageBox.Show("SP's MODIFIED SUCCESSFULLY");
+                ClearControls();
             }
             catch (Exception ex)
             {

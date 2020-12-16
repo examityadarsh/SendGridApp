@@ -17,6 +17,7 @@ namespace SendGridApp
     {
         String connString = null;
         SqlConnection sqlConnection;
+        DataTable tblDatabases = null;
         [Obsolete]
         public StartPage()
         {
@@ -53,7 +54,7 @@ namespace SendGridApp
 
         private void BtnConnect_Click(object sender, EventArgs e)
         {
-            DataTable tblDatabases = null;
+           
             string SELITEM = "NO";
             try
             {
@@ -78,11 +79,8 @@ namespace SendGridApp
                     foreach (DataRow row in tblDatabases.Rows)
                     {
                         CMBMyDB.Items.Add(row["database_name"]);
-                        //CMBMyDB.Items.Add(row["Datatype"]);
                     }
-                    //System.Configuration.Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                    //ConfigurationSettings.AppSettings.Set("Connstring", connString);
-                    //ConfigurationSettings.AppSettings.Set("DBType", CMBDBType.SelectedItem.ToString());
+                    CMBMyDB.Text = "Examity_Prod_";
                 }
                 else
                 {
@@ -138,31 +136,29 @@ namespace SendGridApp
             AddEmailQueue.AppendLine("INSERT INTO [Examity_Common].dbo.[tblEmailQueue](ClientId, ClientName,[To], Cc, Bcc, Subject, Details, StatusId, Comments, AddedOn, MailSentOn)");
             AddEmailQueue.AppendLine("VALUES(@ClientID, @ClientName, @TO, @CC, @BCC, @Subject, @Details, @StatusId, @Comments, GETUTCDATE(), GetUTCdate())");
             AddEmailQueue.AppendLine("End");
-           
 
-            //using (SqlConnection sqlConnection = new SqlConnection())
-            //{
-            //    sqlConnection.ConnectionString = connString;
-            //    sqlConnection.Open();
-            //    SqlCommand sqlCommand = new SqlCommand(AddEmailQueue.ToString(), sqlConnection);
-            //    sqlCommand.CommandType = CommandType.Text;
-            //    sqlCommand.ExecuteNonQuery();
-            //    sqlCommand.Dispose();
-            //    sqlConnection.Close();
-            //}
+
+            using (SqlConnection sqlConnection = new SqlConnection())
+            {
+                sqlConnection.ConnectionString = connString;
+                sqlConnection.Open();
+                SqlCommand sqlCommand = new SqlCommand(AddEmailQueue.ToString(), sqlConnection);
+                sqlCommand.CommandType = CommandType.Text;
+                sqlCommand.ExecuteNonQuery();
+                sqlCommand.Dispose();
+                sqlConnection.Close();
+            }
 
             MainPage M = new MainPage();
             M.Show();
         }
 
-        [Obsolete]
-        private void CMBMyDB_SelectedIndexChanged(object sender, EventArgs e)
+        private void CMBMyDB_TabIndexChanged(object sender, EventArgs e)
         {
             if (sqlConnection != null) { sqlConnection.Close(); }
             ConfigurationSettings.AppSettings.Set("DBName", string.Empty);
             ConfigurationSettings.AppSettings.Set("Connstring", string.Empty);
             ConfigurationSettings.AppSettings.Set("DBName", CMBMyDB.SelectedItem.ToString());
-           
         }
     }
 }
