@@ -37,17 +37,7 @@ namespace SendGridApp
         {
             try
             {
-                //StringBuilder query = new StringBuilder();
-                //get all teh sps from teh db
-                //SELECT Name FROM sys.procedures
-
-                //string query = "SELECT Name FROM sys.procedures order by name asc";
-                //query.Append("SELECT name FROM  sys.procedures WHERE  name in ('Usp_canvasdataload','Usp_canvascorrectdata',");
-                //query.Append("'Usp_canvasdataloadanalytics','Usp_canvasinsertcourseadmin','USP_CanvasLogin','USP_CanvasSendMail','BlackboardDataload','blackboardsendemail','blackboarddatalog','USP_BlackboardInsertCourseAdmin',");
-                //query.Append("'usp_dataload_courses','d2lsendemail','desire2learndataload','usp_d2linsertcourseadmin','usp_desiredtoelarninsertcourseadmin',");
-                //query.Append("'ups_d2linsertcourseadmin','LMSDatalogCourseImportCount','Usp_canvaslogin','Usp_canvassendemail','moodlecorrectdata','moodlegetreportcontent',");
-                //query.Append("'USP_MoodleInsertCourseAdmin','USP_MoodleLogin','USP_MoodleSendMail','USP_MoodleDataLoadAnalytics','USP_MoodleDataload','USP_MoodleCorrectData',");
-                //query.Append("'USP_MoodleGetCourseData','SSIS_Final_Load','convertbetweentimezones')");
+              
                 string query = "sELECT name FROM sys.sql_modules m INNER JOIN sys.objects o " +
 "ON o.object_id = m.object_id WHERE m.definition like '%msdb.dbo.sp_send_dbmail%' " +
 "order by name asc";
@@ -123,14 +113,7 @@ namespace SendGridApp
                         textBox3.Text += Environment.NewLine + itemlist.ToString();
 
                 }
-                //    if (sptext.ToString().Length > 0)
-                //{
-                //   // selectedsp= list.ToArray();
-                //    lblMessage.Visible = true;
-                //    textBox3.Text = sptext.ToString();
-                //}
-                //else
-                //{ textBox3.Text = string.Empty; lblMessage.Visible = false; }
+                btnModify.Visible = true;
             }
         }
 
@@ -165,18 +148,12 @@ namespace SendGridApp
                     string subject = "''";
                     string body = "''";
                     string result1 = "''";
-                    //10.223.81.0
-                    bool regexbool = false;
-                    var commentvalue = string.Empty;
                     result = Regex.Replace(result, @"^\s+$[\r\n]*", string.Empty, RegexOptions.Multiline);
-
                     alltext = result.Trim();
-                 
                     var execstr = "sp_send_dbmail";
                     var regextest = new Regex(".*" + execstr + "(.*),.* ", RegexOptions.Singleline);
                     string myresulttest = regextest.Match(alltext.Trim()).Groups[1].Value.Trim();
 
-                    //myresulttest = Regex.Replace(myresulttest.Trim(), @"^\s+$[\r\n]*", string.Empty, RegexOptions.Multiline);
 
                     string[] myarray = new string[] { };
                     myarray = myresulttest.Trim().Split(',');
@@ -231,7 +208,6 @@ namespace SendGridApp
                     completestatement.Append(subject);
                     completestatement.Append(",");
 
-
                     completestatement.Append(body);
                     completestatement.Append(",");
                     completestatement.Append(21);
@@ -249,8 +225,10 @@ namespace SendGridApp
                     result = String.Empty;
                     completestatement.Clear();
 
-                }
+                   
 
+                }
+                if (textBox3.Text.Length > 0) { btnCopy.Visible = true; btnClear.Visible = true; }
 
             }
             catch (Exception ex)
@@ -277,12 +255,18 @@ namespace SendGridApp
             textBox3.Text = string.Empty;
             list.Clear();
             selectedsp = null;
+            btnModify.Visible = false;
+            btnCopy.Visible = false; btnClear.Visible = false;
         }
 
         private void button3_Click(object sender, EventArgs e)
         {
             try
             {
+                string dbname = ConfigurationSettings.AppSettings["DBName"].ToString();
+                string spcontent = "Use " + dbname + Environment.NewLine + " go " + Environment.NewLine;
+                Clipboard.SetText(spcontent + textBox3.Text);
+
                 //using (SqlConnection sqlConnection = new SqlConnection())
                 //{
                 //    sqlConnection.ConnectionString = connString;
@@ -294,6 +278,8 @@ namespace SendGridApp
                 //    sqlConnection.Close();
                 //}
                 //MessageBox.Show("SP's MODIFIED SUCCESSFULLY");
+                MessageBox.Show("Execute the copied script to DB - " + dbname);
+
                 ClearControls();
             }
             catch (Exception ex)

@@ -72,8 +72,8 @@ namespace SendGridApp
 
                 if (SELITEM == "OK")
                 {
-                    MessageBox.Show("Select the Database");
-                    CMBMyDB.Focus();
+                    //MessageBox.Show("Select the Database");
+                    
 
                     CMBMyDB.Items.Clear();
                     foreach (DataRow row in tblDatabases.Rows)
@@ -81,6 +81,7 @@ namespace SendGridApp
                         CMBMyDB.Items.Add(row["database_name"]);
                     }
                     CMBMyDB.Text = "Examity_Prod_";
+                    CMBMyDB.Focus();
                 }
                 else
                 {
